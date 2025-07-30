@@ -1,0 +1,19 @@
+services:
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    develop:
+      watch:
+        - path: .
+          target: /app  
+          action: sync
+          ignore:
+            - node_modules/
+        - path: ./package.json
+          action: rebuild
+
+    container_name: pet-server
+    ports:
+      - '4000:4000'
+      

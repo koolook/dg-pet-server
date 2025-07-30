@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "strict": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "outDir": "./dist",
+    "noImplicitAny": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    // "paths": {
+    //   "@controllers/*": ["./controllers/*"],
+    //   "@socket/*": ["./socket/*"],
+    //   "@models/*": ["./models/*"],
+    //   "@routes/*": ["./routes/*"],
+    //   "@helpers/*": ["./helpers/*"],
+    //   "@constants/*": ["./constants/*"],
+    //   "@services/*": ["./services/*"],
+    //   "@templates-emails/*": ["constants/templates-emails/*"],
+    //   "@middleware/*": ["./middleware/*"]
+    // },
+    "typeRoots": [/* "helpers/types", */ "node_modules/@types"]
+  },
+  "exclude": ["./node_modules"]
+}

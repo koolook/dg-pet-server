@@ -17,3 +17,13 @@ services:
     ports:
       - '4000:4000'
       
+  mongo:
+    container_name: mongodb
+    # image: mongo:latest
+    image: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - /data/mongodb/mongo1:/data/db
+    restart: always
+

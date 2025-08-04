@@ -6,7 +6,7 @@ services:
     develop:
       watch:
         - path: .
-          target: /app  
+          target: /app
           action: sync
           ignore:
             - node_modules/
@@ -16,7 +16,7 @@ services:
     container_name: pet-server
     ports:
       - '4000:4000'
-      
+
   mongo:
     container_name: mongodb
     # image: mongo:latest
@@ -26,4 +26,3 @@ services:
     volumes:
       - /data/mongodb/mongo1:/data/db
     restart: always
-

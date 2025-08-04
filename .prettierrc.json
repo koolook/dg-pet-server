@@ -1,0 +1,21 @@
+{
+  "printWidth": 120,
+  "trailingComma": "es5",
+  "tabWidth": 2,
+  "semi": false,
+  "singleQuote": true,
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "endOfLine": "auto",
+  "importOrder": [
+    "<THIRD_PARTY_MODULES>",
+    "^@config/(.*)$",
+    "^@controllers/(.*)$|^@constants/(.*)$|^@helpers/(.*)$|^@services/(.*)$|^@socket/(.*)$",
+    "^@middleware/(.*)$",
+    "^@models/(.*)$",
+    "^@routes/(.*)$",
+    "^[./]"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true
+}

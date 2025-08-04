@@ -1,10 +1,15 @@
 import express, { Application, Request, Response } from 'express';
 import { MongoClient } from 'mongodb';
 
+import cors from 'cors';
+
+
 const app: Application = express();
 const port: number = 4000;
 
 let mongoClient: MongoClient;
+
+app.use(cors());
 
 app.get('/', (req: Request, res: Response) => {
     res.send('>>> Hello from Express with TypeScript!');

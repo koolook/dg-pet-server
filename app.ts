@@ -1,33 +1,47 @@
 import express, { Application, Request, Response } from 'express'
-import { MongoClient } from 'mongodb'
+import mongoose from 'mongoose'
+
+import MessageModel from './models/ServerMessage'
+import authRouter from './authRouter'
 
 import cors from 'cors'
 
 const app: Application = express()
 const port: number = 4000
 
-let mongoClient: MongoClient
-
 app.use(cors())
+
+app.use('/auth', authRouter)
 
 app.get('/', (req: Request, res: Response) => {
   res.send('>>> Hello from Express with TypeScript!')
 })
 
 app.get('/about', async (req: Request, res: Response) => {
-  const db = mongoClient.db('pet-base')
-  const data = await db.collection('messages').find().toArray()
+  const data = await MessageModel.find()
 
   console.log(JSON.stringify(data))
   res.send(JSON.stringify(data))
 })
 
+app.get('/seed', async (req, res) => {
+  try {
+    ;['Hello! this is a pet server', "I'm still here", "Don't turn me off, please"].forEach(async (s) => {
+      const m = new MessageModel()
+      m.text = s
+      await m.save()
+    })
+
+    res.json('Done')
+  } catch (error) {
+    res.status(400).json('Error seeding data')
+  }
+})
+
 async function start() {
   try {
     console.log('Connect DB!')
-    mongoClient = new MongoClient('mongodb://mongodb:27017/')
-    await mongoClient.connect()
-    console.log('Connected')
+    await mongoose.connect('mongodb://mongodb:27017/')
 
     app.listen(port, () => {
       console.log(`Server running on http://localhost:${port}`)

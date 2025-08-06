@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import config from 'config'
 
 import UserSchema from './models/User'
 import { Result, validationResult } from 'express-validator'
@@ -56,7 +57,9 @@ class AuthController {
         return res.status(400).json({ message: `Access denied to user ${login}` })
       }
 
-      const token = jwt.sign({ userid: user.login, roles: user.roles }, 'secret-word', { expiresIn: '1h' })
+      const token = jwt.sign({ userid: user._id, roles: user.roles }, config.get<string>('jwtSecret'), {
+        expiresIn: '1h',
+      })
 
       res.json({ token })
     } catch (error) {

@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { check } from 'express-validator'
 
 import controller from './authController'
+import { checkAccess, checkRoles } from './authMiddleware'
 
 const router = Router()
 
@@ -14,6 +15,7 @@ router.post(
   controller.signUp
 )
 router.post('/login', controller.login)
-router.get('/test', controller.test)
+router.get('/test', [checkAccess, checkRoles(['admin'])], controller.test)
+router.get('/user', [checkAccess, checkRoles(['user'])], controller.test)
 
 export default router

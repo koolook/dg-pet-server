@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
 
 import UserSchema from './models/User'
 import { Result, validationResult } from 'express-validator'
@@ -33,11 +34,35 @@ class AuthController {
 
       res.json({ message: `User ${login} created` })
     } catch (error) {
-      res.status(400).json('Error creating user')
+      res.status(400).json({ message: 'Error creating user', error })
     }
   }
 
-  login = async (req: Request, res: Response) => {}
+  login = async (req: Request, res: Response) => {
+    try {
+      const { login, password } = req.body
+
+      // check user exists
+      const user = await UserSchema.findOne({ login })
+      if (!user) {
+        console.log(`User ${login} does not exist`)
+        return res.status(400).json({ message: `User ${login} does not exist` })
+      }
+
+      const isAuthorized = bcrypt.compareSync(password, user.hash)
+
+      if (!isAuthorized) {
+        console.log(`Access denied to user ${login}`)
+        return res.status(400).json({ message: `Access denied to user ${login}` })
+      }
+
+      const token = jwt.sign({ userid: user.login, roles: user.roles }, 'secret-word', { expiresIn: '1h' })
+
+      res.json({ token })
+    } catch (error) {
+      res.status(400).json({ message: 'Error logging in', error })
+    }
+  }
 
   test = async (req: Request, res: Response) => {
     res.json('All fine')

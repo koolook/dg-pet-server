@@ -9,6 +9,7 @@ import cors from 'cors'
 const app: Application = express()
 const port: number = 4000
 
+app.use(express.json())
 app.use(cors())
 
 app.use('/auth', authRouter)

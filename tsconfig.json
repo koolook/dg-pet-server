@@ -21,7 +21,7 @@
     //   "@templates-emails/*": ["constants/templates-emails/*"],
     //   "@middleware/*": ["./middleware/*"]
     // },
-    "typeRoots": [/* "helpers/types", */ "node_modules/@types"]
+    "typeRoots": ["./helpers/types", "node_modules/@types"]
   },
   "exclude": ["./node_modules"]
 }

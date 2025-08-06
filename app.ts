@@ -1,5 +1,6 @@
 import express, { Application, Request, Response } from 'express'
 import mongoose from 'mongoose'
+import config from 'config'
 
 import MessageModel from './models/ServerMessage'
 import authRouter from './authRouter'
@@ -7,7 +8,7 @@ import authRouter from './authRouter'
 import cors from 'cors'
 
 const app: Application = express()
-const port: number = 4000
+const port: number = config.get('port') || 4000
 
 app.use(express.json())
 app.use(cors())
@@ -42,7 +43,7 @@ app.get('/seed', async (req, res) => {
 async function start() {
   try {
     console.log('Connect DB!')
-    await mongoose.connect('mongodb://mongodb:27017/')
+    await mongoose.connect(config.get('dbUrl'))
 
     app.listen(port, () => {
       console.log(`Server running on http://localhost:${port}`)

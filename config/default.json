@@ -1,0 +1,5 @@
+{
+  "jwtSecret": "9f0de014953d6dcb586bc4d833f719b8",
+  "port": 4000,
+  "dbUrl": "mongodb://mongodb:27017/"
+}

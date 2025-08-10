@@ -15,6 +15,7 @@ router.post(
   controller.signUp
 )
 router.post('/login', controller.login)
+router.post('/refresh', checkAccess, controller.refresh)
 router.get('/test', [checkAccess, checkRoles(['admin'])], controller.test)
 router.get('/user', [checkAccess, checkRoles(['user'])], controller.test)
 

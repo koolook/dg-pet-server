@@ -61,10 +61,14 @@ class AuthController {
         expiresIn: '1h',
       })
 
-      res.json({ token })
+      res.json({ token, id: user._id, roles: user.roles })
     } catch (error) {
       res.status(400).json({ message: 'Error logging in', error })
     }
+  }
+
+  refresh = async (req: Request, res: Response) => {
+    res.json(req.user)
   }
 
   test = async (req: Request, res: Response) => {

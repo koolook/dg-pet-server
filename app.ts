@@ -11,7 +11,12 @@ const app: Application = express()
 const port: number = config.get('port') || 4000
 
 app.use(express.json())
-app.use(cors())
+app.use(
+  cors({
+    credentials: true,
+    origin: 'http://localhost:3000',
+  })
+)
 
 app.use('/auth', authRouter)
 

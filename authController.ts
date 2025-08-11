@@ -61,14 +61,20 @@ class AuthController {
         expiresIn: '1h',
       })
 
-      res.json({ token, id: user._id, roles: user.roles })
+      res.json({ token, id: user._id, login: user.login, roles: user.roles })
     } catch (error) {
       res.status(400).json({ message: 'Error logging in', error })
     }
   }
 
   refresh = async (req: Request, res: Response) => {
-    res.json(req.user)
+    const user = await UserSchema.findOne({ _id: req.user?.userid })
+    if (!user) {
+      console.log(`User does not exist`)
+      return res.status(400).json({ message: `User does not exist` })
+    }
+
+    res.json({ ...req.user, login: user.login })
   }
 
   test = async (req: Request, res: Response) => {

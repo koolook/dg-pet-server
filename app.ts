@@ -18,6 +18,9 @@ app.use(
   })
 )
 
+app.use('/static', express.static('static'))
+app.use('/uploaded', express.static('uploaded'))
+
 app.use('/auth', authRouter)
 
 app.get('/', (req: Request, res: Response) => {

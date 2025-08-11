@@ -6,6 +6,7 @@ import MessageModel from './models/ServerMessage'
 import authRouter from './authRouter'
 
 import cors from 'cors'
+import fileUpload from 'express-fileupload'
 
 const app: Application = express()
 const port: number = config.get('port') || 4000
@@ -17,6 +18,8 @@ app.use(
     origin: 'http://localhost:3000',
   })
 )
+
+app.use(fileUpload())
 
 app.use('/static', express.static('static'))
 app.use('/uploaded', express.static('uploaded'))

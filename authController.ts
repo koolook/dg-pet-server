@@ -5,6 +5,7 @@ import config from 'config'
 
 import UserSchema from './models/User'
 import { Result, validationResult } from 'express-validator'
+import { UploadedFile } from 'express-fileupload'
 
 class AuthController {
   signUp = async (req: Request, res: Response) => {
@@ -79,6 +80,21 @@ class AuthController {
 
   test = async (req: Request, res: Response) => {
     res.json('All fine')
+  }
+
+  upload = async (req: Request, res: Response) => {
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return res.status(400).send('No files were uploaded.')
+    }
+
+    const sampleFile = req.files.sampleFile as UploadedFile
+    const uploadPath = __dirname + '/uploaded/' + sampleFile.name
+
+    sampleFile.mv(uploadPath, function (err) {
+      if (err) return res.status(500).send(err)
+
+      res.json({ path: '/uploaded/' + sampleFile.name })
+    })
   }
 }
 

@@ -11,6 +11,14 @@ import fileUpload from 'express-fileupload'
 const app: Application = express()
 const port: number = config.get('port') || 4000
 
+try {
+  if (!config.get<string>('jwtSecret')) {
+    throw new Error('JWT secret is not set. Set environment variable `HOST_JWT_SECRET` before you start server.');
+  }
+} catch (error) {
+  throw error;
+}
+
 app.use(express.json())
 app.use(
   cors({

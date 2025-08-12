@@ -1,0 +1,3 @@
+{
+    "jwtSecret": "HOST_JWT_SECRET"    
+}

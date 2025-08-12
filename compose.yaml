@@ -1,5 +1,7 @@
 services:
   client:
+    environment:
+      - HOST_JWT_SECRET=${HOST_JWT_SECRET}
     build:
       context: .
       dockerfile: Dockerfile

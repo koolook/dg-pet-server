@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import config from 'config'
 
-import UsersSchema from './models/Users/Users'
+import UsersSchema from '../models/Users/Users'
 import { Result, validationResult } from 'express-validator'
 import { UploadedFile } from 'express-fileupload'
 

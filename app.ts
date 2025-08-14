@@ -2,7 +2,7 @@ import express, { Application, Request, Response } from 'express'
 import mongoose from 'mongoose'
 import config from 'config'
 
-import authRouter from './authRouter'
+import authRouter from './routes/authRouter'
 
 import cors from 'cors'
 import fileUpload from 'express-fileupload'

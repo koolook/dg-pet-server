@@ -1,8 +1,8 @@
 import { Router } from 'express'
 import { check } from 'express-validator'
 
-import controller from './authController'
-import { checkAccess, checkRoles } from './authMiddleware'
+import controller from '../controllers/authController'
+import { checkAccess, checkRoles } from '../middleware/authMiddleware'
 
 const router = Router()
 

@@ -82,7 +82,7 @@ class AuthController {
     res.json('All fine')
   }
 
-  upload = async (req: Request, res: Response) => {
+  /*   upload = async (req: Request, res: Response) => {
     if (!req.files || Object.keys(req.files).length === 0) {
       return res.status(400).send('No files were uploaded.')
     }
@@ -95,7 +95,7 @@ class AuthController {
 
       res.json({ path: '/uploaded/' + sampleFile.name })
     })
-  }
+  } */
 }
 
 export default new AuthController()

@@ -3,19 +3,19 @@ import mongoose from 'mongoose'
 import config from 'config'
 
 import authRouter from './routes/authRouter'
+import articleRouter from './routes/articleRouter'
 
 import cors from 'cors'
-import fileUpload from 'express-fileupload'
 
 const app: Application = express()
 const port: number = config.get('port') || 4000
 
 try {
   if (!config.get<string>('jwtSecret')) {
-    throw new Error('JWT secret is not set. Set environment variable `HOST_JWT_SECRET` before you start server.');
+    throw new Error('JWT secret is not set. Set environment variable `HOST_JWT_SECRET` before you start server.')
   }
 } catch (error) {
-  throw error;
+  throw error
 }
 
 app.use(express.json())
@@ -26,12 +26,11 @@ app.use(
   })
 )
 
-app.use(fileUpload())
-
 app.use('/static', express.static('static'))
 app.use('/uploaded', express.static('uploaded'))
 
 app.use('/auth', authRouter)
+app.use('/article', articleRouter)
 
 app.get('/', (req: Request, res: Response) => {
   res.send('>>> Hello from Express with TypeScript!')

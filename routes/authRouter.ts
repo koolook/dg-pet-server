@@ -19,5 +19,4 @@ router.post('/refresh', checkAccess, controller.refresh)
 router.get('/test', [checkAccess, checkRoles(['admin'])], controller.test)
 router.get('/user', [checkAccess, checkRoles(['user'])], controller.test)
 
-router.post('/upload', checkAccess, controller.upload)
 export default router

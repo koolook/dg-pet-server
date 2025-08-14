@@ -56,6 +56,58 @@ class ArticleController {
     }
   }
 
+  getById = async (req: Request, res: Response) => {
+    const _id = req.params.id
+    const userId = req.user?.userid
+
+    try {
+      const article = await Articles.findOne({ _id })
+      if (article?.isPublished) {
+        return res.json({
+          id: article._id,
+          title: article.title,
+          body: article.body,
+        })
+      } else {
+        throw new Error()
+      }
+    } catch (error) {
+      res.status(404).json({ message: 'Article is not available' })
+    }
+  }
+
+  deleteById = async (req: Request, res: Response) => {
+    const _id = req.params.id
+    const userId = req.user?.userid
+
+    if (!userId) {
+      return res.status(401).json({
+        message: 'Not authorized',
+      })
+    }
+
+    try {
+      const article = await Articles.findOne({ _id })
+      if (!article) {
+        return res.status(404).json({ message: 'not found' })
+      }
+
+      if (article.authorId !== userId) {
+        return res.status(401).json({ message: 'Not authorized' })
+      }
+
+      const deleted = await Articles.deleteOne({ _id })
+      if (deleted) {
+        console.log(`Deleted ${_id}`)
+        return res.json({ message: 'success' })
+      } else {
+        throw new Error()
+      }
+    } catch (error) {
+      return res.status(404).json({ message: 'Could not delete anything' })
+    }
+  }
+
   /* 
     if (!req.files || Object.keys(req.files).length === 0) {
       return res.status(400).send('No files were uploaded.')

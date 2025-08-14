@@ -10,6 +10,9 @@ router.use(fileUpload())
 
 router.get('/feed', checkToken, controller.feed)
 
+router.get('/:id', checkToken, controller.getById)
+router.delete('/:id', checkToken, controller.deleteById)
+
 router.post('/update', [checkAccess, checkRoles(['author'])], controller.update)
 
 export default router

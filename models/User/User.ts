@@ -2,10 +2,10 @@ import mongoose, { Schema } from 'mongoose'
 
 import { User } from './User.type'
 
-const userSchema = new Schema({
+const UserSchema = new Schema({
   login: { type: Schema.Types.String, unique: true, required: true },
   hash: { type: Schema.Types.String, required: true },
   roles: [String],
 })
 
-export default mongoose.model<User & mongoose.Document>('User', userSchema)
+export default mongoose.model<User & mongoose.Document>('User', UserSchema)

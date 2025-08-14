@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import config from 'config'
 
-import UserSchema from './models/User/User'
+import UsersSchema from './models/Users/Users'
 import { Result, validationResult } from 'express-validator'
 import { UploadedFile } from 'express-fileupload'
 
@@ -21,7 +21,7 @@ class AuthController {
       const { login, password } = req.body
 
       // check user exists
-      const existingUser = await UserSchema.findOne({ login })
+      const existingUser = await UsersSchema.findOne({ login })
       if (existingUser) {
         console.log(`User ${login} already exists`)
         return res.status(400).json({ message: `User ${login} already exists` })
@@ -31,7 +31,7 @@ class AuthController {
       const hash = bcrypt.hashSync(password, 7)
 
       // create and save user document
-      const newUser = new UserSchema({ login, hash, roles: ['user', 'admin'] })
+      const newUser = new UsersSchema({ login, hash, roles: ['user', 'admin'] })
       await newUser.save()
 
       res.json({ message: `User ${login} created` })
@@ -45,7 +45,7 @@ class AuthController {
       const { login, password } = req.body
 
       // check user exists
-      const user = await UserSchema.findOne({ login })
+      const user = await UsersSchema.findOne({ login })
       if (!user) {
         console.log(`User ${login} does not exist`)
         return res.status(400).json({ message: `User ${login} does not exist` })
@@ -69,7 +69,7 @@ class AuthController {
   }
 
   refresh = async (req: Request, res: Response) => {
-    const user = await UserSchema.findOne({ _id: req.user?.userid })
+    const user = await UsersSchema.findOne({ _id: req.user?.userid })
     if (!user) {
       console.log(`User does not exist`)
       return res.status(400).json({ message: `User does not exist` })

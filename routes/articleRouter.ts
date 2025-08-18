@@ -8,11 +8,12 @@ const router = Router()
 
 router.use(fileUpload())
 
-router.get('/feed', checkToken, controller.feed)
-
+router.post('/', [checkAccess, checkRoles(['author'])], controller.create)
+router.put('/:id', [checkAccess, checkRoles(['author'])], controller.update)
 router.get('/:id', checkToken, controller.getById)
 router.delete('/:id', checkToken, controller.deleteById)
 
-router.post('/update', [checkAccess, checkRoles(['author'])], controller.update)
+router.get('/feed', checkToken, controller.feed)
+router.post('/feed', checkToken, controller.getManyByIds)
 
 export default router

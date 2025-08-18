@@ -1,40 +1,57 @@
 import { Request, Response } from 'express'
 
 import Articles from '../../models/Articles/Articles'
-import { MongooseError } from 'mongoose'
+import mongoose, { MongooseError } from 'mongoose'
+import { ArticlesType } from 'models/Articles/Articles.type'
+import { ObjectId } from 'mongodb'
 
 class ArticleController {
-  update = async (req: Request, res: Response) => {
-    const { id } = req.body
-    if (!id) {
-      const { title, body, publish } = req.body
-      console.log(`Create new article: ` + JSON.stringify(req.body))
+  private article2json = (article: any /* : ArticlesType & mongoose.Document */) => {
+    return {
+      id: article._id,
+      title: article.title,
+      body: article.body,
+      createdAt: article.createdAt,
+      isPublished: article.isPublished,
+      author: article.authorName,
+    }
+  }
 
-      // create new article
-      const newArticle = new Articles({
-        title,
-        body,
-        authorId: req.user?.userid,
-        createdAt: new Date().valueOf(),
-        isPublished: !!publish,
+  create = async (req: Request, res: Response) => {
+    const { title, body, publish } = req.body
+    console.log(`Create new article: ` + JSON.stringify(req.body))
+
+    // create new article
+    const newArticle = new Articles({
+      title,
+      body,
+      authorId: new ObjectId(req.user?.userid),
+      createdAt: new Date().valueOf(),
+      isPublished: !!publish,
+    })
+
+    try {
+      console.log('Saving...')
+      await newArticle.save()
+      console.log('Ready')
+      return res.json({ id: newArticle._id })
+    } catch (error) {
+      console.log('Failed')
+      console.log((error as MongooseError).message)
+      return res.status(500).json({
+        name: (error as any).name,
+        code: (error as any).code,
       })
+    }
+  }
 
-      try {
-        console.log('Saving...')
-        await newArticle.save()
-        console.log('Ready')
-        return res.json({ id: newArticle._id })
-      } catch (error) {
-        console.log('Failed')
-        console.log((error as MongooseError).message)
-        return res.status(500).json({
-          name: (error as any).name,
-          code: (error as any).code,
-        })
-      }
-    } else {
-      // update existing article
-      res.status(500).json({ txt: 'not implemented' })
+  update = async (req: Request, res: Response) => {
+    const _id = req.params.id
+    const userId = req.user?.userid
+
+    try {
+    } catch (error) {
+      res.status(400).json({ message: 'Error updating article' })
     }
   }
 
@@ -62,17 +79,65 @@ class ArticleController {
 
     try {
       const article = await Articles.findOne({ _id })
-      if (article?.isPublished) {
-        return res.json({
-          id: article._id,
-          title: article.title,
-          body: article.body,
-        })
+      if (article && (article.isPublished || (userId && article.authorId === userId))) {
+        return res.json(this.article2json(article))
       } else {
         throw new Error()
       }
     } catch (error) {
       res.status(404).json({ message: 'Article is not available' })
+    }
+  }
+
+  getManyByIds = async (req: Request, res: Response) => {
+    const userId = req.user?.userid
+    const requestedIds = req.body.ids as string[]
+
+    try {
+      const objIds = requestedIds?.map((id) => new ObjectId(id))
+
+      const articles = await Articles.aggregate([
+        {
+          $match: {
+            $and: [
+              objIds?.length > 0 ? { _id: { $in: objIds } } : {},
+
+              { $or: [{ isPublished: true }, ...(userId ? [{ authorId: userId }] : [])] },
+            ],
+          },
+        },
+        { $sort: { createdAt: -1 } },
+        {
+          $addFields: {
+            authorIdObj: {
+              $toObjectId: '$authorId',
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'authorIdObj',
+            foreignField: '_id',
+            as: 'author',
+          },
+        },
+        {
+          $set: {
+            authorName: {
+              $first: '$author.login',
+            },
+          },
+        },
+      ])
+
+      if (!articles || !articles.length) {
+        throw new Error()
+      }
+
+      return res.json(articles.map((article) => this.article2json(article)))
+    } catch (error) {
+      return res.status(404).json({ message: (error as any).message })
     }
   }
 

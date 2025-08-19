@@ -7,6 +7,7 @@ import { ObjectId } from 'mongodb'
 
 class ArticleController {
   private article2json = (article: any /* : ArticlesType & mongoose.Document */) => {
+    const updatedAt = article.updatedAt
     return {
       id: article._id,
       title: article.title,
@@ -14,6 +15,7 @@ class ArticleController {
       createdAt: article.createdAt,
       isPublished: article.isPublished,
       author: article.authorName,
+      ...{ updatedAt },
     }
   }
 
@@ -49,7 +51,22 @@ class ArticleController {
     const _id = req.params.id
     const userId = req.user?.userid
 
+    const { title, body, isPublished } = req.body
+
     try {
+      const query = await Articles.updateOne(
+        { _id },
+        {
+          $set: {
+            ...{ title },
+            ...{ body },
+            ...{ isPublished },
+            updatedAt: new Date().valueOf(),
+          },
+        }
+      )
+      console.log(`Updated: ${JSON.stringify({ _id, modified: query.modifiedCount })}`)
+      res.json('OK')
     } catch (error) {
       res.status(400).json({ message: 'Error updating article' })
     }
@@ -164,7 +181,7 @@ class ArticleController {
       const deleted = await Articles.deleteOne({ _id })
       if (deleted) {
         console.log(`Deleted ${_id}`)
-        return res.json({ message: 'success' })
+        return res.json('OK')
       } else {
         throw new Error()
       }

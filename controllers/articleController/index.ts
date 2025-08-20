@@ -1,13 +1,15 @@
 import { Request, Response } from 'express'
 
-import Articles from '../../models/Articles/Articles'
-import mongoose, { MongooseError } from 'mongoose'
-import { ArticlesType } from 'models/Articles/Articles.type'
+import { MongooseError } from 'mongoose'
 import { ObjectId } from 'mongodb'
+import { UploadedFile } from 'express-fileupload'
+import Images from '../../models/Images/Images'
 
+import Articles from '../../models/Articles/Articles'
+import { insertImage } from './modules/imageUtils'
 class ArticleController {
   private article2json = (article: any /* : ArticlesType & mongoose.Document */) => {
-    const updatedAt = article.updatedAt
+    const { updatedAt, imageUrl } = article
     return {
       id: article._id,
       title: article.title,
@@ -15,24 +17,26 @@ class ArticleController {
       createdAt: article.createdAt,
       isPublished: article.isPublished,
       author: article.authorName,
-      ...{ updatedAt },
+      ...{ updatedAt, imageUrl },
     }
   }
 
   create = async (req: Request, res: Response) => {
-    const { title, body, publish } = req.body
+    const { title, body, isPublished } = req.body
     console.log(`Create new article: ` + JSON.stringify(req.body))
 
-    // create new article
-    const newArticle = new Articles({
-      title,
-      body,
-      authorId: new ObjectId(req.user?.userid),
-      createdAt: new Date().valueOf(),
-      isPublished: !!publish,
-    })
-
     try {
+      const imageId = await insertImage(req)
+      // create new article
+      const newArticle = new Articles({
+        title,
+        body,
+        imageId,
+        authorId: new ObjectId(req.user?.userid),
+        createdAt: new Date().valueOf(),
+        isPublished: isPublished === 'true',
+      })
+
       console.log('Saving...')
       await newArticle.save()
       console.log('Ready')
@@ -51,18 +55,25 @@ class ArticleController {
     const _id = req.params.id
     const userId = req.user?.userid
 
-    const { title, body, isPublished } = req.body
+    const { title, body, isPublished, removeImage } = req.body
 
     try {
+      const imageId = removeImage ? null : await insertImage(req)
+      const unsetClause = removeImage ? { $unset: { imageId: '' } } : {}
+
+      // TODO: Cascade delete image record and remove file from server
+
       const query = await Articles.updateOne(
         { _id },
         {
           $set: {
+            ...{ imageId },
             ...{ title },
             ...{ body },
             ...{ isPublished },
             updatedAt: new Date().valueOf(),
           },
+          unsetClause,
         }
       )
       console.log(`Updated: ${JSON.stringify({ _id, modified: query.modifiedCount })}`)
@@ -129,6 +140,9 @@ class ArticleController {
             authorIdObj: {
               $toObjectId: '$authorId',
             },
+            imageIdObj: {
+              $toObjectId: '$imageId',
+            },
           },
         },
         {
@@ -140,9 +154,20 @@ class ArticleController {
           },
         },
         {
+          $lookup: {
+            from: 'images',
+            localField: 'imageIdObj',
+            foreignField: '_id',
+            as: 'image',
+          },
+        },
+        {
           $set: {
             authorName: {
               $first: '$author.login',
+            },
+            imageUrl: {
+              $first: '$image.path',
             },
           },
         },

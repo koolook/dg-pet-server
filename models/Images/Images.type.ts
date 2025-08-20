@@ -1,4 +1,4 @@
 export interface ImagesType {
-  _id: string
+  //   _id: string
   path: string
 }

@@ -6,7 +6,7 @@ import { UploadedFile } from 'express-fileupload'
 import Images from '../../models/Images/Images'
 
 import Articles from '../../models/Articles/Articles'
-import { insertImage } from './modules/imageUtils'
+import { deleteImage, insertImage } from './modules/imageUtils'
 class ArticleController {
   private article2json = (article: any /* : ArticlesType & mongoose.Document */) => {
     const { updatedAt, imageUrl } = article
@@ -61,7 +61,8 @@ class ArticleController {
       const imageId = removeImage ? null : await insertImage(req)
       const unsetClause = removeImage ? { $unset: { imageId: '' } } : {}
 
-      // TODO: Cascade delete image record and remove file from server
+      const article = await Articles.findOne({ _id })
+      const oldImageId = article?.imageId
 
       const query = await Articles.updateOne(
         { _id },
@@ -77,6 +78,10 @@ class ArticleController {
         }
       )
       console.log(`Updated: ${JSON.stringify({ _id, modified: query.modifiedCount })}`)
+
+      if (oldImageId && (removeImage || imageId)) {
+        await deleteImage(oldImageId)
+      }
       res.json('OK')
     } catch (error) {
       res.status(400).json({ message: 'Error updating article' })
@@ -203,9 +208,15 @@ class ArticleController {
         return res.status(401).json({ message: 'Not authorized' })
       }
 
+      const oldImageId = article.imageId
+
       const deleted = await Articles.deleteOne({ _id })
       if (deleted) {
         console.log(`Deleted ${_id}`)
+        if (oldImageId) {
+          await deleteImage(oldImageId)
+        }
+
         return res.json('OK')
       } else {
         throw new Error()

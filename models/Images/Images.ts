@@ -4,6 +4,7 @@ import { ImagesType } from './Images.type'
 
 export const ImagesSchema = new Schema({
   //   _id: Schema.Types.String,
+  md5: { type: Schema.Types.String, required: true },
   path: { type: Schema.Types.String, required: true },
 })
 

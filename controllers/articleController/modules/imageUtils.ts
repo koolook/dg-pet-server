@@ -1,17 +1,32 @@
+import config from 'config'
+import path from 'path'
+import fs from 'fs'
 import { Request } from 'express'
 import { UploadedFile } from 'express-fileupload'
 import Images from '../../../models/Images/Images'
+import Articles from '../../../models/Articles/Articles'
 
 export async function insertImage(req: Request) {
   if (req.files?.coverImage) {
     const file = req.files.coverImage as UploadedFile
-    const path = '/uploaded/' + file.name
-
     try {
-      await file.mv('/app' + path)
+      const md5 = file.md5
+      const oldImage = await Images.findOne({ md5 })
+      if (oldImage) {
+        console.log('Using existing image')
 
-      const newImage = new Images({ path })
+        return oldImage._id as string
+      }
+
+      const urlPath = path.join('/uploaded', md5 + path.extname(file.name))
+      const savePath = path.join(config.get('root_path'), urlPath)
+
+      await file.mv(savePath)
+
+      const newImage = new Images({ path: urlPath, md5 })
       await newImage.save()
+
+      console.log(`Saved image ${newImage._id} to ${savePath}`)
 
       return newImage._id as string
     } catch (error) {
@@ -20,4 +35,24 @@ export async function insertImage(req: Request) {
     }
   }
   return null
+}
+
+export async function deleteImage(_id: string) {
+  try {
+    const image = await Images.findOne({ _id })
+    if (!image) {
+      return
+    }
+
+    const imageOwners = await Articles.find({ imageId: _id })
+    if (imageOwners.length === 0) {
+      const filePath = path.join(config.get('root_path'), image.path)
+
+      await Images.deleteOne({ _id })
+      fs.rmSync(filePath, { recursive: false })
+      console.log(`Image ${_id} and file ${filePath} are deleted`)
+    }
+  } catch (error) {
+    console.log('Error removing image: ' + (error as any).message)
+  }
 }

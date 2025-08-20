@@ -1,11 +1,9 @@
 import { Request, Response } from 'express'
-
 import { MongooseError } from 'mongoose'
 import { ObjectId } from 'mongodb'
-import { UploadedFile } from 'express-fileupload'
-import Images from '../../models/Images/Images'
 
 import Articles from '../../models/Articles/Articles'
+
 import { deleteImage, insertImage } from './modules/imageUtils'
 class ArticleController {
   private article2json = (article: any /* : ArticlesType & mongoose.Document */) => {
@@ -68,10 +66,10 @@ class ArticleController {
         { _id },
         {
           $set: {
-            ...{ imageId },
-            ...{ title },
-            ...{ body },
-            ...{ isPublished },
+            ...(imageId ? { imageId } : {}),
+            ...(title ? { title } : {}),
+            ...(body ? { body } : {}),
+            ...(isPublished !== undefined ? { isPublished } : {}),
             updatedAt: new Date().valueOf(),
           },
           unsetClause,

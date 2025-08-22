@@ -18,6 +18,8 @@ services:
     container_name: pet-server
     ports:
       - '4000:4000'
+    volumes:
+      - server_uploaded:/app/uploaded
 
   mongo:
     container_name: mongodb
@@ -29,3 +31,4 @@ services:
 
 volumes:
   mongodb_data:
+  server_uploaded:

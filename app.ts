@@ -1,4 +1,5 @@
 import express, { Application, Request, Response } from 'express'
+
 import mongoose from 'mongoose'
 import config from 'config'
 
@@ -6,6 +7,9 @@ import authRouter from './routes/authRouter'
 import articleRouter from './routes/articleRouter'
 
 import cors from 'cors'
+import { createServer } from 'http'
+import { Server, Socket } from 'socket.io'
+import { initCron } from './services/Cron'
 
 const app: Application = express()
 const port: number = config.get('port') || 4000
@@ -26,6 +30,15 @@ app.use(
   })
 )
 
+const server = createServer(app)
+const io = new Server(server, { cors: { origin: '*' } })
+
+// io.use(socketAuthStrict) // ????
+
+io.on('connection', (socket: Socket) => {
+  console.log('A user connected ')
+})
+
 app.use('/static', express.static('static'))
 app.use('/uploaded', express.static('uploaded'))
 
@@ -40,8 +53,10 @@ async function start() {
   try {
     console.log('Connect DB!')
     await mongoose.connect(config.get('dbUrl'))
+    server.listen(port, () => {
+      // startCronJob(io)
+      initCron(io)
 
-    app.listen(port, () => {
       console.log(`Server running on http://localhost:${port}`)
     })
   } catch (error) {

@@ -1,6 +1,7 @@
-import { Request, Response, NextFunction } from 'express'
-import jwt from 'jsonwebtoken'
 import config from 'config'
+import { NextFunction, Request, Response } from 'express'
+import jwt from 'jsonwebtoken'
+
 import { UserPayload } from '../models/user-payload'
 
 export const checkAccess = (req: Request, res: Response, next: NextFunction) => {

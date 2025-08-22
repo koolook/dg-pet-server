@@ -1,14 +1,12 @@
-import express, { Application, Request, Response } from 'express'
-
-import mongoose from 'mongoose'
 import config from 'config'
-
-import authRouter from './routes/authRouter'
-import articleRouter from './routes/articleRouter'
-
 import cors from 'cors'
+import express, { Application, Request, Response } from 'express'
 import { createServer } from 'http'
+import mongoose from 'mongoose'
 import { Server, Socket } from 'socket.io'
+
+import articleRouter from './routes/articleRouter'
+import authRouter from './routes/authRouter'
 import { initCron } from './services/Cron'
 
 const app: Application = express()

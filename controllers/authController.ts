@@ -1,11 +1,11 @@
-import { Request, Response } from 'express'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
 import config from 'config'
+import { Request, Response } from 'express'
+import { UploadedFile } from 'express-fileupload'
+import { Result, validationResult } from 'express-validator'
+import jwt from 'jsonwebtoken'
 
 import UsersSchema from '../models/Users/Users'
-import { Result, validationResult } from 'express-validator'
-import { UploadedFile } from 'express-fileupload'
 
 class AuthController {
   signUp = async (req: Request, res: Response) => {

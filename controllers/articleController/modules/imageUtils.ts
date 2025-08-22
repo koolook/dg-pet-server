@@ -1,10 +1,11 @@
 import config from 'config'
-import path from 'path'
-import fs from 'fs'
 import { Request } from 'express'
 import { UploadedFile } from 'express-fileupload'
-import Images from '../../../models/Images/Images'
+import fs from 'fs'
+import path from 'path'
+
 import Articles from '../../../models/Articles/Articles'
+import Images from '../../../models/Images/Images'
 
 export async function insertImage(req: Request) {
   if (req.files?.coverImage) {

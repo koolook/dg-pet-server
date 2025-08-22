@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { checkAccess, checkRoles, checkToken } from '../middleware/authMiddleware'
+import fileUpload from 'express-fileupload'
 
 import controller from '../controllers/articleController'
-import fileUpload from 'express-fileupload'
+import { checkAccess, checkRoles, checkToken } from '../middleware/authMiddleware'
 
 const router = Router()
 

@@ -50,24 +50,22 @@ export const checkToken = (req: Request, res: Response, next: NextFunction) => {
 }
 
 // use STRICTLY after `checkAccess` middleware
-export const checkRoles = (allowedRoles: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    console.log(`User: ${req.user?.userid}`)
-    const userRoles = req.user?.roles || ['user']
+export const checkRoles = (allowedRoles: string[]) => (req: Request, res: Response, next: NextFunction) => {
+  console.log(`User: ${req.user?.userid}`)
+  const userRoles = req.user?.roles || ['user']
 
-    let hasRole = false
-    userRoles.forEach(async (role) => {
-      if (allowedRoles.includes(role)) {
-        hasRole = true
-      }
-    })
-
-    if (!hasRole) {
-      return res.status(401).json({
-        message: 'Insufficient access rights',
-      })
+  let hasRole = false
+  userRoles.forEach(async (role) => {
+    if (allowedRoles.includes(role)) {
+      hasRole = true
     }
+  })
 
-    return next()
+  if (!hasRole) {
+    return res.status(401).json({
+      message: 'Insufficient access rights',
+    })
   }
+
+  return next()
 }

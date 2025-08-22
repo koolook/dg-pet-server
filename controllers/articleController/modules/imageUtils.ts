@@ -31,7 +31,7 @@ export async function insertImage(req: Request) {
 
       return newImage._id as string
     } catch (error) {
-      console.log('File upload error: ' + (error as any).message)
+      console.log(`File upload error: ${(error as any).message}`)
       console.log('Continue without image...')
     }
   }
@@ -54,6 +54,6 @@ export async function deleteImage(_id: string) {
       console.log(`Image ${_id} and file ${filePath} are deleted`)
     }
   } catch (error) {
-    console.log('Error removing image: ' + (error as any).message)
+    console.log(`Error removing image: ${(error as any).message}`)
   }
 }

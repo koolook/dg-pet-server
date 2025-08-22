@@ -12,12 +12,8 @@ import { initCron } from './services/Cron'
 const app: Application = express()
 const port: number = config.get('port') || 4000
 
-try {
-  if (!config.get<string>('jwtSecret')) {
-    throw new Error('JWT secret is not set. Set environment variable `HOST_JWT_SECRET` before you start server.')
-  }
-} catch (error) {
-  throw error
+if (!config.get<string>('jwtSecret')) {
+  throw new Error('JWT secret is not set. Set environment variable `HOST_JWT_SECRET` before you start server.')
 }
 
 app.use(express.json())

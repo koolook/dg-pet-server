@@ -21,7 +21,7 @@ class ArticleController {
 
   create = async (req: Request, res: Response) => {
     const { title, body, isPublished } = req.body
-    console.log(`Create new article: ` + JSON.stringify(req.body))
+    console.log(`Create new article: ${JSON.stringify(req.body)}`)
 
     try {
       const imageId = await insertImage(req)
@@ -51,7 +51,8 @@ class ArticleController {
 
   update = async (req: Request, res: Response) => {
     const _id = req.params.id
-    const userId = req.user?.userid
+    // TODO: see if userId chack against Article.authorId is needed
+    // const userId = req.user?.userid
 
     const { title, body, isPublished, removeImage } = req.body
 
@@ -112,8 +113,6 @@ class ArticleController {
       const article = await Articles.findOne({ _id })
       if (article && (article.isPublished || (userId && article.authorId === userId))) {
         return res.json(this.article2json(article))
-      } else {
-        throw new Error()
       }
     } catch (error) {
       res.status(404).json({ message: 'Article is not available' })
@@ -216,8 +215,6 @@ class ArticleController {
         }
 
         return res.json('OK')
-      } else {
-        throw new Error()
       }
     } catch (error) {
       return res.status(404).json({ message: 'Could not delete anything' })

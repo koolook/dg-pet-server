@@ -1,7 +1,6 @@
 import bcrypt from 'bcryptjs'
 import config from 'config'
 import { Request, Response } from 'express'
-import { UploadedFile } from 'express-fileupload'
 import { Result, validationResult } from 'express-validator'
 import jwt from 'jsonwebtoken'
 
@@ -71,8 +70,8 @@ class AuthController {
   refresh = async (req: Request, res: Response) => {
     const user = await UsersSchema.findOne({ _id: req.user?.userid })
     if (!user) {
-      console.log(`User does not exist`)
-      return res.status(400).json({ message: `User does not exist` })
+      console.log('User does not exist')
+      return res.status(400).json({ message: 'User does not exist' })
     }
 
     res.json({ ...req.user, login: user.login })

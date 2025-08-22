@@ -27,10 +27,10 @@ export async function updateDelayedPublish(io: Server) {
       }
     )
 
-    console.log('Cron: Articles updated : ' + query.modifiedCount)
+    console.log(`Cron: Articles updated : ${query.modifiedCount}`)
 
     // send ids using `io`
   } catch (error) {
-    console.log('Cron: Error updating Articles:' + (error as any).toSting())
+    console.log(`Cron: Error updating Articles: ${(error as any).toSting()}`)
   }
 }

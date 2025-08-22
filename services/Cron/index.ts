@@ -9,11 +9,13 @@ export function initCron(io: Server) {
   const job = new CronJob(
     '*/2 * * * *',
     () => {
-      console.log('Cron triggered at ' + new Date())
-      void updateDelayedPublish(io)
+      console.log(`Cron triggered at ${new Date()}`)
+      updateDelayedPublish(io)
     },
     null,
-    true,
+    false,
     CRON_TIMEZONE
   )
+
+  job.start()
 }

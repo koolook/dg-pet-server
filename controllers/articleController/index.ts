@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { ArticlesType } from 'models/Articles/Articles.type'
 import { ObjectId } from 'mongodb'
 import { MongooseError } from 'mongoose'
 
@@ -7,7 +8,7 @@ import { deleteImage, insertImage } from './modules/imageUtils'
 
 class ArticleController {
   private article2json = (article: any /* : ArticlesType & mongoose.Document */) => {
-    const { updatedAt, imageUrl } = article
+    const { updatedAt, imageUrl, publishAt } = article
     return {
       id: article._id,
       title: article.title,
@@ -15,13 +16,16 @@ class ArticleController {
       createdAt: article.createdAt,
       isPublished: article.isPublished,
       author: article.authorName,
-      ...{ updatedAt, imageUrl },
+      ...{ updatedAt, imageUrl, publishAt },
     }
   }
 
   create = async (req: Request, res: Response) => {
-    const { title, body, isPublished } = req.body
+    const { title, body } = req.body
     console.log(`Create new article: ${JSON.stringify(req.body)}`)
+
+    const toPublish = req.body.publish === 'true'
+    const publishAt = req.body.publishAt ? Number.parseInt(req.body.publishAt, 10) : null
 
     try {
       const imageId = await insertImage(req)
@@ -32,8 +36,12 @@ class ArticleController {
         imageId,
         authorId: new ObjectId(req.user?.userid),
         createdAt: new Date().valueOf(),
-        isPublished: isPublished === 'true',
+        isPublished: toPublish && !publishAt,
       })
+
+      if (toPublish && publishAt) {
+        newArticle.publishAt = publishAt
+      }
 
       console.log('Saving...')
       await newArticle.save()
@@ -51,29 +59,57 @@ class ArticleController {
 
   update = async (req: Request, res: Response) => {
     const _id = req.params.id
-    // TODO: see if userId chack against Article.authorId is needed
+    // TODO: see if userId check against Article.authorId is needed
     // const userId = req.user?.userid
 
-    const { title, body, isPublished, removeImage } = req.body
+    const { title, body, removeImage } = req.body
+
+    const set: Partial<ArticlesType> = {}
+    const unset: Partial<Record<keyof ArticlesType, string>> = {}
 
     try {
-      const imageId = removeImage ? null : await insertImage(req)
-      const unsetClause = removeImage ? { $unset: { imageId: '' } } : {}
-
       const article = await Articles.findOne({ _id })
-      const oldImageId = article?.imageId
+      if (!article) {
+        return res.status(404).json('Not found')
+      }
+
+      if (title) {
+        set.title = title
+      }
+      if (body) {
+        set.body = body
+      }
+
+      const oldImageId = article.imageId
+      const imageId = removeImage ? null : await insertImage(req)
+      if (imageId) {
+        set.imageId = imageId
+      }
+      if (removeImage) {
+        unset.imageId = ''
+      }
+
+      if (req.body.publish !== undefined) {
+        const toPublish = req.body.publish === 'true'
+        const publishAt = req.body.publishAt ? Number.parseInt(req.body.publishAt, 10) : null
+
+        set.isPublished = toPublish && !publishAt
+
+        if (toPublish && publishAt) {
+          set.publishAt = publishAt
+        } else {
+          unset.publishAt = ''
+        }
+      }
 
       const query = await Articles.updateOne(
         { _id },
         {
           $set: {
-            ...(imageId ? { imageId } : {}),
-            ...(title ? { title } : {}),
-            ...(body ? { body } : {}),
-            ...(isPublished !== undefined ? { isPublished } : {}),
+            ...set,
             updatedAt: new Date().valueOf(),
           },
-          unsetClause,
+          $unset: unset,
         }
       )
       console.log(`Updated: ${JSON.stringify({ _id, modified: query.modifiedCount })}`)
@@ -83,27 +119,27 @@ class ArticleController {
       }
       res.json('OK')
     } catch (error) {
-      res.status(400).json({ message: 'Error updating article' })
+      res.status(400).json({ message: `Error updating article: ${(error as any).message}` })
     }
   }
 
-  feed = async (req: Request, res: Response) => {
-    const userId = req.user?.userid
+  // feed = async (req: Request, res: Response) => {
+  //   const userId = req.user?.userid
 
-    try {
-      const feedIds = await Articles.aggregate<{ _id: string }>([
-        userId ? { $match: { $or: [{ isPublished: true }, { authorId: userId }] } } : { $match: { isPublished: true } },
-        { $sort: { createdAt: -1 } },
-        { $project: { _id: 1 } },
-      ])
+  //   try {
+  //     const feedIds = await Articles.aggregate<{ _id: string }>([
+  //       userId ? { $match: { $or: [{ isPublished: true }, { authorId: userId }] } } : { $match: { isPublished: true } },
+  //       { $sort: { createdAt: -1 } },
+  //       { $project: { _id: 1 } },
+  //     ])
 
-      res.json(feedIds.map(({ _id }) => _id))
-    } catch (error) {
-      res.status(500).json({
-        error: (error as Error).message,
-      })
-    }
-  }
+  //     res.json(feedIds.map(({ _id }) => _id))
+  //   } catch (error) {
+  //     res.status(500).json({
+  //       error: (error as Error).message,
+  //     })
+  //   }
+  // }
 
   getById = async (req: Request, res: Response) => {
     const _id = req.params.id

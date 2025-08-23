@@ -2,6 +2,10 @@ import { Server } from 'socket.io'
 
 import Articles from '../../../models/Articles/Articles'
 
+/**
+ * Finds Articles with delayed publish and make publish if timestamp is passed.
+ * @param io
+ */
 export async function updateDelayedPublish(io: Server) {
   const now = new Date().valueOf()
 

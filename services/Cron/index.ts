@@ -5,6 +5,10 @@ import { updateDelayedPublish } from './funcs/updateDelayedPublish'
 
 const CRON_TIMEZONE = 'Europe/Moscow'
 
+/**
+ * Init cron jobs
+ * @param io
+ */
 export function initCron(io: Server) {
   const job = new CronJob(
     '*/2 * * * *',

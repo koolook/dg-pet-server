@@ -1,3 +1,6 @@
+/**
+ * @file Router definition for '/article` endpoints. CRUD for Article and news feed is implemented here
+ */
 import { Router } from 'express'
 import fileUpload from 'express-fileupload'
 

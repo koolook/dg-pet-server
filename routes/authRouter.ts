@@ -1,11 +1,17 @@
+/**
+ * @file Router definition for '/auth' enpoints
+ */
 import { Router } from 'express'
 import { check } from 'express-validator'
 
 import controller from '../controllers/authController'
-import { checkAccess, checkRoles } from '../middleware/authMiddleware'
+import { checkAccess } from '../middleware/authMiddleware'
 
 const router = Router()
 
+/**
+ * Register user request.
+ */
 router.post(
   '/signup',
   [
@@ -14,9 +20,16 @@ router.post(
   ],
   controller.signUp
 )
+
+/**
+ * Login request
+ * Returns JWT token to client
+ */
 router.post('/login', controller.login)
+
+/**
+ * Session check request. Verifies if JWT token is still valid.
+ */
 router.post('/refresh', checkAccess, controller.refresh)
-router.get('/test', [checkAccess, checkRoles(['admin'])], controller.test)
-router.get('/user', [checkAccess, checkRoles(['user'])], controller.test)
 
 export default router

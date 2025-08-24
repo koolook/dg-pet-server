@@ -58,7 +58,7 @@ class AuthController {
       }
 
       const token = jwt.sign({ userid: user._id, roles: user.roles }, config.get<string>('jwtSecret'), {
-        expiresIn: '1h',
+        expiresIn: '5d',
       })
 
       res.json({ token, id: user._id, login: user.login, roles: user.roles })

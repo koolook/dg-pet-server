@@ -7,6 +7,7 @@ import { Server, Socket } from 'socket.io'
 
 import articleRouter from './routes/articleRouter'
 import authRouter from './routes/authRouter'
+import uploadRouter from './routes/uploadRouter'
 import { initCron } from './services/Cron'
 
 const app: Application = express()
@@ -38,6 +39,7 @@ app.use('/uploaded', express.static('uploaded'))
 
 app.use('/auth', authRouter)
 app.use('/article', articleRouter)
+app.use('/upload', uploadRouter)
 
 app.get('/', (req: Request, res: Response) => {
   res.send('>>> Hello from Express with TypeScript!')

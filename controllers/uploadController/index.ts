@@ -1,20 +1,7 @@
 import { Request, Response } from 'express'
-import mongoose from 'mongoose'
 
 import UploadedFiles from '../../models/UploadedFiles/UploadedFiles'
-import { UploadedFilesType } from '../../models/UploadedFiles/UploadedFiles.type'
-import { saveFile } from './modules/utils'
-
-const file2json = (file: UploadedFilesType & mongoose.Document) => {
-  const { _id, name, path, size, type } = file
-  return {
-    id: _id,
-    name,
-    path,
-    size,
-    type,
-  }
-}
+import { file2json, saveFile } from './modules/utils'
 
 class ArticleController {
   uploadFile = async (req: Request, res: Response) => {

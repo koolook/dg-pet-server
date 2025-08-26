@@ -2,6 +2,7 @@ import config from 'config'
 import { Request } from 'express'
 import { UploadedFile } from 'express-fileupload'
 import fs from 'fs'
+import mongoose from 'mongoose'
 import path from 'path'
 
 import UploadedFiles from '../../../models/UploadedFiles/UploadedFiles'
@@ -41,4 +42,15 @@ export async function saveFile(req: Request) {
     return newFile
   }
   return null
+}
+
+export const file2json = (file: UploadedFilesType & mongoose.Document) => {
+  const { _id, name, path, size, type } = file
+  return {
+    id: _id,
+    name,
+    path,
+    size,
+    type,
+  }
 }

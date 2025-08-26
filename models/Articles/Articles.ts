@@ -15,6 +15,8 @@ export const ArticlesSchema = new Schema({
   publishAt: { type: Schema.Types.Number },
   createdAt: { type: Schema.Types.Number },
   updatedAt: { type: Schema.Types.Number },
+
+  attachments: { type: [Schema.Types.String], default: [] },
 })
 
 export default mongoose.model<ArticlesType & mongoose.Document>('Articles', ArticlesSchema)

@@ -4,28 +4,37 @@ import { ObjectId } from 'mongodb'
 import { MongooseError } from 'mongoose'
 
 import Articles from '../../models/Articles/Articles'
+import { file2json } from '../uploadController/modules/utils'
 import { deleteImage, insertImage } from './modules/imageUtils'
 
-class ArticleController {
-  private article2json = (article: any /* : ArticlesType & mongoose.Document */) => {
-    const { updatedAt, imageUrl, publishAt } = article
-    return {
-      id: article._id,
-      title: article.title,
-      body: article.body,
-      createdAt: article.createdAt,
-      isPublished: article.isPublished,
-      author: article.authorName,
-      ...{ updatedAt, imageUrl, publishAt },
-    }
-  }
+const article2json = (article: any) => {
+  const { updatedAt, imageUrl, publishAt } = article
 
+  const attachments =
+    article.attachmentsData && Array.isArray(article.attachmentsData)
+      ? (article.attachmentsData as any[]).map((a) => file2json(a))
+      : undefined
+
+  return {
+    id: article._id,
+    title: article.title,
+    body: article.body,
+    createdAt: article.createdAt,
+    isPublished: article.isPublished,
+    author: article.authorName,
+    ...{ updatedAt, imageUrl, publishAt, attachments },
+  }
+}
+
+class ArticleController {
   create = async (req: Request, res: Response) => {
     const { title, body } = req.body
     console.log(`Create new article: ${JSON.stringify(req.body)}`)
 
     const toPublish = req.body.publish === 'true'
     const publishAt = req.body.publishAt ? Number.parseInt(req.body.publishAt, 10) : null
+
+    const attachments = req.body.attachments ? JSON.parse(req.body.attachments) : null
 
     try {
       const imageId = await insertImage(req)
@@ -38,6 +47,10 @@ class ArticleController {
         createdAt: new Date().valueOf(),
         isPublished: toPublish && !publishAt,
       })
+
+      if (attachments) {
+        newArticle.attachments = attachments.map((a: string) => new ObjectId(a))
+      }
 
       if (toPublish && publishAt) {
         newArticle.publishAt = publishAt
@@ -62,7 +75,7 @@ class ArticleController {
     // TODO: see if userId check against Article.authorId is needed
     // const userId = req.user?.userid
 
-    const { title, body, removeImage } = req.body
+    const { title, body, removeImage, attachments } = req.body
 
     const set: Partial<ArticlesType> = {}
     const unset: Partial<Record<keyof ArticlesType, string>> = {}
@@ -79,6 +92,13 @@ class ArticleController {
       if (body) {
         set.body = body
       }
+
+      if (attachments) {
+        set.attachments = JSON.parse(attachments)
+      }
+
+      const attachmentsToDelete = article.attachments?.filter((id) => attachments && !attachments.includes(id))
+      console.log(`To delete: ${JSON.stringify(attachmentsToDelete)}`)
 
       const oldImageId = article.imageId
       const imageId = removeImage ? null : await insertImage(req)
@@ -148,7 +168,7 @@ class ArticleController {
     try {
       const article = await Articles.findOne({ _id })
       if (article && (article.isPublished || (userId && article.authorId === userId))) {
-        return res.json(this.article2json(article))
+        return res.json(article2json(article))
       }
     } catch (error) {
       res.status(404).json({ message: 'Article is not available' })
@@ -181,6 +201,13 @@ class ArticleController {
             imageIdObj: {
               $toObjectId: '$imageId',
             },
+            attachmentsObj: {
+              $map: {
+                input: '$attachments',
+                as: 'idString',
+                in: { $toObjectId: '$$idString' },
+              },
+            },
           },
         },
         {
@@ -200,6 +227,14 @@ class ArticleController {
           },
         },
         {
+          $lookup: {
+            from: 'uploadedfiles',
+            localField: 'attachmentsObj',
+            foreignField: '_id',
+            as: 'attachmentsData',
+          },
+        },
+        {
           $set: {
             authorName: {
               $first: '$author.login',
@@ -215,7 +250,7 @@ class ArticleController {
         throw new Error()
       }
 
-      return res.json(articles.map((article) => this.article2json(article)))
+      return res.json(articles.map((article) => article2json(article)))
     } catch (error) {
       return res.status(404).json({ message: (error as any).message })
     }

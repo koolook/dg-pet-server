@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 
 import UploadedFiles from '../../models/UploadedFiles/UploadedFiles'
-import { file2json, saveFile } from './modules/utils'
+import { deleteFiles, file2json, saveFile } from './modules/utils'
 
 class ArticleController {
   uploadFile = async (req: Request, res: Response) => {
@@ -35,7 +35,16 @@ class ArticleController {
   }
 
   deleteFiles = async (req: Request, res: Response) => {
-    return res.status(500).json('Not implemented')
+    // const userId = req.user?.userid
+    const requestedIds = req.body.ids as string[]
+
+    try {
+      await deleteFiles(requestedIds)
+
+      res.json('OK')
+    } catch (error) {
+      res.status(500).json(error)
+    }
   }
 }
 

@@ -7,16 +7,14 @@ export const ArticlesSchema = new Schema({
 
   title: { type: Schema.Types.String, required: true },
   body: { type: Schema.Types.String, required: true },
-  authorId: { type: Schema.Types.String, required: true },
-  imageId: { type: Schema.Types.String },
+  authorId: { type: Schema.Types.ObjectId, ref: 'Users', required: true },
+  imageId: { type: Schema.Types.ObjectId, ref: 'Images' },
 
   isPublished: { type: Schema.Types.Boolean, required: true },
 
   publishAt: { type: Schema.Types.Number },
   createdAt: { type: Schema.Types.Number },
   updatedAt: { type: Schema.Types.Number },
-
-  attachments: { type: [Schema.Types.String], default: [] },
 })
 
 export default mongoose.model<ArticlesType & mongoose.Document>('Articles', ArticlesSchema)

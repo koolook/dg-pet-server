@@ -2,9 +2,12 @@ import config from 'config'
 import { Request } from 'express'
 import { UploadedFile } from 'express-fileupload'
 import fs from 'fs'
+import { ObjectId } from 'mongodb'
 import mongoose from 'mongoose'
 import path from 'path'
 
+import ArticleAttachmenRefs from '../../../models/ArticleAttachmentRefs/ArticleAttachmenRefs'
+import { ArticleAttachmentRefsType } from '../../../models/ArticleAttachmentRefs/ArticleAttachmenRefs.type'
 import UploadedFiles from '../../../models/UploadedFiles/UploadedFiles'
 import { UploadedFilesType } from '../../../models/UploadedFiles/UploadedFiles.type'
 
@@ -42,6 +45,50 @@ export async function saveFile(req: Request) {
     return newFile
   }
   return null
+}
+
+export async function deleteFiles(ids: string[]) {
+  const query = { _id: { $in: ids } }
+
+  const paths = await UploadedFiles.find(query, { path: 1 })
+
+  const delQuery = await UploadedFiles.deleteMany(query)
+  console.log(`Deleted file records ${delQuery.deletedCount}`)
+
+  const rootPath = config.get<string>('root_path')
+  paths.forEach((p) => {
+    fs.rmSync(path.join(rootPath, p.path), { recursive: true })
+    console.log(`Deleted from disk: ${p.path}`)
+  })
+}
+
+export async function deleteRefs(refs: (ArticleAttachmentRefsType & mongoose.Document)[]) {
+  await ArticleAttachmenRefs.deleteMany({
+    _id: { $in: refs.map((r) => r._id) },
+  })
+
+  const cleanupIds = await UploadedFiles.aggregate([
+    {
+      $lookup: {
+        from: 'articleattachmentrefs',
+        localField: '_id',
+        foreignField: 'fileId',
+        as: 'refs',
+      },
+    },
+    {
+      $match: {
+        refs: { $size: 0 },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+      },
+    },
+  ])
+
+  await deleteFiles(cleanupIds)
 }
 
 export const file2json = (file: UploadedFilesType & mongoose.Document) => {

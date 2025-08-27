@@ -143,21 +143,27 @@ class ArticleController {
       // deal with attachments
       const currentRefs = await ArticleAttachmenRefs.find({ articleId }, { articleId: 1, fileId: 1 })
 
-      console.log(`Current refs: ${JSON.stringify(currentRefs)}`)
+      console.log(`>>> Current refs: ${JSON.stringify(currentRefs.map((r) => r.fileId))}`)
+      console.log(`>>> attachmentIds: ${JSON.stringify(attachmentIds)}`)
 
-      const toDelete = currentRefs?.filter((ref) => !attachmentIds?.includes(ref.fileId))
+      const toDelete = currentRefs?.filter((ref) => {
+        return attachmentIds.findIndex((aId) => aId.toString() === ref.fileId.toString()) === -1
+      })
 
       console.log(`Refs to delete: ${JSON.stringify(toDelete)}`)
 
-      const refFileIds = currentRefs.map((ref) => ref.fileId)
       const toAppend = attachmentIds
-        ?.filter((aId) => !refFileIds.includes(aId))
+        .filter((aId) => {
+          return currentRefs.findIndex((ref) => ref.fileId.toString() === aId.toString()) === -1
+        })
         .map((fileId) => ({ articleId: new ObjectId(articleId), fileId: new ObjectId(fileId) }))
 
       console.log(`Refs to append: ${JSON.stringify(toAppend)}`)
 
-      await deleteRefs(toDelete)
       await ArticleAttachmenRefs.create(toAppend)
+      if (toDelete.length > 0) {
+        await deleteRefs(toDelete)
+      }
 
       res.json('OK')
     } catch (error) {
@@ -171,7 +177,7 @@ class ArticleController {
 
     try {
       const article = await Articles.findOne({ _id })
-      if (article && (article.isPublished || (userId && article.authorId === userId))) {
+      if (article && (article.isPublished || (userId && article.authorId.toString() === userId))) {
         return res.json(article2json(article))
       }
     } catch (error) {
@@ -299,8 +305,8 @@ class ArticleController {
         return res.status(404).json({ message: 'not found' })
       }
 
-      if (article.authorId !== userId) {
-        return res.status(401).json({ message: 'Not authorized' })
+      if (article.authorId.toString() !== userId) {
+        return res.status(401).json({ message: 'Author mismatch' })
       }
 
       const oldImageId = article.imageId

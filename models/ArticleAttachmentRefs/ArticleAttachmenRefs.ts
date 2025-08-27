@@ -7,7 +7,7 @@ export const ArticleAttachmentRefsSchema = new Schema({
   fileId: { type: Schema.Types.ObjectId, ref: 'UploadedFiles', required: true },
 })
 
-ArticleAttachmentRefsSchema.index({ articleId: 1, fileId: 1 }, { unique: true })
+// ArticleAttachmentRefsSchema.index({ articleId: 1, fileId: 1 }, { unique: true })
 
 export default mongoose.model<ArticleAttachmentRefsType & mongoose.Document>(
   'ArticleAttachmentRefs',

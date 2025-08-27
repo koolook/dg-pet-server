@@ -2,7 +2,6 @@ import config from 'config'
 import { Request } from 'express'
 import { UploadedFile } from 'express-fileupload'
 import fs from 'fs'
-import { ObjectId } from 'mongodb'
 import mongoose from 'mongoose'
 import path from 'path'
 
@@ -63,9 +62,12 @@ export async function deleteFiles(ids: string[]) {
 }
 
 export async function deleteRefs(refs: (ArticleAttachmentRefsType & mongoose.Document)[]) {
-  await ArticleAttachmenRefs.deleteMany({
+  console.log(`deleteRefs: ${JSON.stringify(refs)}`)
+
+  const deleteQuery = await ArticleAttachmenRefs.deleteMany({
     _id: { $in: refs.map((r) => r._id) },
   })
+  console.log(`\tdeleteQuery: ${deleteQuery.deletedCount}`)
 
   const cleanupIds = await UploadedFiles.aggregate([
     {
@@ -87,6 +89,8 @@ export async function deleteRefs(refs: (ArticleAttachmentRefsType & mongoose.Doc
       },
     },
   ])
+
+  console.log(`Cleanup IDs: ${JSON.stringify(cleanupIds)}`)
 
   await deleteFiles(cleanupIds)
 }

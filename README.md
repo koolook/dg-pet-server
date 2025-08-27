@@ -1,6 +1,7 @@
 # About
 
 This is my personal express.js + Mongodb + Mongoose study.
+You can find the client side of this project in https://github.com/koolook/dg-pet-client 
 
 # How to run
 

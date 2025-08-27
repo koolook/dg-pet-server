@@ -48,7 +48,7 @@ app.get('/', (req: Request, res: Response) => {
 async function start() {
   try {
     console.log('Connect DB!')
-    await mongoose.connect(config.get('dbUrl'))
+    await mongoose.connect(config.get('dbUrl') || 'mongodb://mongodb:27017/')
     server.listen(port, () => {
       // startCronJob(io)
       initCron(io)

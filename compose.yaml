@@ -2,6 +2,7 @@ services:
   client:
     environment:
       - HOST_JWT_SECRET=${HOST_JWT_SECRET}
+      - HOST_DB_CONNECT=${HOST_DB_CONNECT}
     build:
       context: .
       dockerfile: Dockerfile

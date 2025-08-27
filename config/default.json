@@ -1,5 +1,4 @@
 {
   "root_path": "/app",
-  "port": 4000,
-  "dbUrl": "mongodb://mongodb:27017/"
+  "port": 4000
 }

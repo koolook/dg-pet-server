@@ -1,3 +1,4 @@
 {
-  "jwtSecret": "HOST_JWT_SECRET"
+  "jwtSecret": "HOST_JWT_SECRET",
+  "dbUrl": "HOST_DB_CONNECT"
 }

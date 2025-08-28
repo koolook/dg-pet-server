@@ -30,7 +30,7 @@ class AuthController {
       const hash = bcrypt.hashSync(password, 7)
 
       // create and save user document
-      const newUser = new UsersSchema({ login, hash, roles: ['user', 'admin'] })
+      const newUser = new UsersSchema({ login, hash, roles: ['user', 'author', 'admin'] })
       await newUser.save()
 
       res.json({ message: `User ${login} created` })

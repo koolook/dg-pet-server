@@ -47,13 +47,15 @@ app.get('/', (req: Request, res: Response) => {
 
 async function start() {
   try {
-    console.log('Connect DB!')
+    console.log('Starting...')
     await mongoose.connect(config.get('dbUrl') || 'mongodb://mongodb:27017/')
+
+    console.log('Connected DB')
+
     server.listen(port, () => {
-      // startCronJob(io)
       initCron(io)
 
-      console.log(`Server running on http://localhost:${port}`)
+      console.log(`Server running on port: ${port}`)
     })
   } catch (error) {
     console.log('Server Error', (error as Error).message)

@@ -5,8 +5,9 @@ meta:
     version: 20
 build:
   artifacts:
-    dist: /app
+    "*": /app
   command: npm run build
 run:
+  command: npm run start
   persistenceMount: /app/uploaded
-  containerPort: 80
+  containerPort: 4000

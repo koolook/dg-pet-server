@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn app.ts",
+    "start": "node ./dist/app.js",
     "build": "tsc --project ./",
     "lint": "eslint . --ext .ts",
     "prettier:fix": "npx prettier --write ."

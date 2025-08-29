@@ -38,7 +38,7 @@ app.use('/article', articleRouter)
 app.use('/upload', uploadRouter)
 
 app.get('/', (req: Request, res: Response) => {
-  res.send('>>> Hello from Express with TypeScript!')
+  res.send('>>> Server running. CORS: 1')
 })
 
 async function start() {

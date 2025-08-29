@@ -17,7 +17,6 @@ if (!config.get<string>('jwtSecret')) {
   throw new Error('JWT secret is not set. Set environment variable `HOST_JWT_SECRET` before you start server.')
 }
 
-app.use(express.json())
 app.use(
   cors({
     origin: '*',
@@ -25,6 +24,8 @@ app.use(
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   })
 )
+
+app.use(express.json())
 
 const server = createServer(app)
 const io = new Server(server, { cors: { origin: '*' } })

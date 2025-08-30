@@ -5,7 +5,7 @@ meta:
     version: 20
 build:
   artifacts:
-    "*": /app
+    "*": /
   command: npm run build
 run:
   command: npm run start

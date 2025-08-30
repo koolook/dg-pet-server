@@ -17,7 +17,18 @@ if (!config.get<string>('jwtSecret')) {
   throw new Error('JWT secret is not set. Set environment variable `HOST_JWT_SECRET` before you start server.')
 }
 
-app.use(cors())
+app.use(
+  cors({
+    origin: ['*'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true,
+  })
+)
+
+app.use((req, res, next) => {
+  console.log(`Headers after CORS: ${JSON.stringify(res.getHeaders())} `);
+  next()
+})
 
 app.use(express.json())
 
@@ -38,7 +49,7 @@ app.use('/article', articleRouter)
 app.use('/upload', uploadRouter)
 
 app.get('/', (req: Request, res: Response) => {
-  res.send('>>> Server running. CORS: 1')
+  res.send('>>> Server running. CORS: 2')
 })
 
 async function start() {
@@ -52,6 +63,8 @@ async function start() {
       initCron(io)
 
       console.log(`Server running on port: ${port}`)
+      console.log('Ready: 2');
+      
     })
   } catch (error) {
     console.log('Server Error', (error as Error).message)

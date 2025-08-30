@@ -10,7 +10,7 @@ import authRouter from './routes/authRouter'
 import uploadRouter from './routes/uploadRouter'
 import { initCron } from './services/Cron'
 
-const VERSION=3
+const VERSION = 5
 
 const app: Application = express()
 const port: number = config.get('port') || 4000

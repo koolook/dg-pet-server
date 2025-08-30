@@ -10,6 +10,8 @@ import authRouter from './routes/authRouter'
 import uploadRouter from './routes/uploadRouter'
 import { initCron } from './services/Cron'
 
+const VERSION=3
+
 const app: Application = express()
 const port: number = config.get('port') || 4000
 
@@ -19,7 +21,7 @@ if (!config.get<string>('jwtSecret')) {
 
 app.use(
   cors({
-    origin: ['*'],
+    origin: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
   })
@@ -49,7 +51,7 @@ app.use('/article', articleRouter)
 app.use('/upload', uploadRouter)
 
 app.get('/', (req: Request, res: Response) => {
-  res.send('>>> Server running. CORS: 2')
+  res.send(`>>> Server running. CORS: ${VERSION}`)
 })
 
 async function start() {
@@ -63,7 +65,7 @@ async function start() {
       initCron(io)
 
       console.log(`Server running on port: ${port}`)
-      console.log('Ready: 2');
+      console.log(`Ready: ${VERSION}`);
       
     })
   } catch (error) {

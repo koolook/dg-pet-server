@@ -283,7 +283,6 @@ class ArticleController {
         ...joinImagesPipline,
       ])
 
-      console.log(`Feed: headers before sending: ${JSON.stringify(res.getHeaders())} `);
       return res.json(articles.map((article) => article2json(article)))
     } catch (error) {
       return res.status(404).json({ message: (error as any).message })

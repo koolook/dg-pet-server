@@ -10,7 +10,7 @@ import authRouter from './routes/authRouter'
 import uploadRouter from './routes/uploadRouter'
 import { initCron } from './services/Cron'
 
-const VERSION=4
+const VERSION = 5
 
 const app: Application = express()
 const port: number = config.get('port') || 4000
@@ -26,11 +26,6 @@ app.use(
     credentials: true,
   })
 )
-
-app.use((req, res, next) => {
-  console.log(`Headers after CORS: ${JSON.stringify(res.getHeaders())} `);
-  next()
-})
 
 app.use(express.json())
 
@@ -65,8 +60,7 @@ async function start() {
       initCron(io)
 
       console.log(`Server running on port: ${port}`)
-      console.log(`Ready: ${VERSION}`);
-      
+      console.log(`Ready: ${VERSION}`)
     })
   } catch (error) {
     console.log('Server Error', (error as Error).message)

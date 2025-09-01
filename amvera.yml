@@ -1,3 +1,5 @@
+---
+version: null
 meta:
   environment: node
   toolchain:
@@ -5,8 +7,8 @@ meta:
     version: 20
 build:
   artifacts:
-    "*": /app
-  command: npm run build
+    '*': /app
+  additionalCommands: npm run build
 run:
   command: npm run start
   persistenceMount: /app/uploaded

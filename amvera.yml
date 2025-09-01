@@ -6,9 +6,9 @@ meta:
     name: npm
     version: 20
 build:
-  artifacts:
-    '*': /app
   additionalCommands: npm run build
+  artifacts:
+    '*': /
 run:
   command: npm run start
   persistenceMount: /app/uploaded

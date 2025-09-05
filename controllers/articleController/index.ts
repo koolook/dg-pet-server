@@ -277,7 +277,6 @@ class ArticleController {
             ],
           },
         },
-        { $sort: { createdAt: -1 } },
         ...joinAttachmentsPipeline,
         ...joinAuthorPipline,
         ...joinImagesPipline,

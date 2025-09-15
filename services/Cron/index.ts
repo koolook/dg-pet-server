@@ -11,7 +11,7 @@ const CRON_TIMEZONE = 'Europe/Moscow'
  */
 export function initCron(io: Server) {
   const job = new CronJob(
-    '*/2 * * * *',
+    '*/10 * * * *',
     () => {
       console.log(`Cron triggered at ${new Date()}`)
       updateDelayedPublish(io)

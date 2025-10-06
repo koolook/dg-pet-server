@@ -5,8 +5,7 @@ import fs from 'fs'
 import mongoose from 'mongoose'
 import path from 'path'
 
-import ArticleAttachmenRefs from '../../../models/ArticleAttachmentRefs/ArticleAttachmenRefs'
-import { ArticleAttachmentRefsType } from '../../../models/ArticleAttachmentRefs/ArticleAttachmenRefs.type'
+import Articles from '../../../models/Articles/Articles'
 import UploadedFiles from '../../../models/UploadedFiles/UploadedFiles'
 import { UploadedFilesType } from '../../../models/UploadedFiles/UploadedFiles.type'
 
@@ -61,38 +60,12 @@ export async function deleteFiles(ids: string[]) {
   })
 }
 
-export async function deleteRefs(refs: (ArticleAttachmentRefsType & mongoose.Document)[]) {
-  console.log(`deleteRefs: ${JSON.stringify(refs)}`)
-
-  const deleteQuery = await ArticleAttachmenRefs.deleteMany({
-    _id: { $in: refs.map((r) => r._id) },
-  })
-  console.log(`\tdeleteQuery: ${deleteQuery.deletedCount}`)
-
-  const cleanupIds = await UploadedFiles.aggregate([
-    {
-      $lookup: {
-        from: 'articleattachmentrefs',
-        localField: '_id',
-        foreignField: 'fileId',
-        as: 'refs',
-      },
-    },
-    {
-      $match: {
-        refs: { $size: 0 },
-      },
-    },
-    {
-      $project: {
-        _id: 1,
-      },
-    },
-  ])
-
-  console.log(`Cleanup IDs: ${JSON.stringify(cleanupIds)}`)
-
-  await deleteFiles(cleanupIds)
+export async function safeDelete(ids: string[]) {
+  const counts = await Promise.all(
+    ids.map((id) => Articles.countDocuments({ attachments: { $elemMatch: { $eq: id } } }))
+  )
+  const idsToDelete = ids.filter((id, idx) => counts[idx] === 0)
+  await deleteFiles(idsToDelete)
 }
 
 export const file2json = (file: UploadedFilesType & mongoose.Document) => {

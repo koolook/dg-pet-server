@@ -3,9 +3,8 @@ import { ArticlesType } from 'models/Articles/Articles.type'
 import { ObjectId } from 'mongodb'
 import { MongooseError } from 'mongoose'
 
-import ArticleAttachmenRefs from '../../models/ArticleAttachmentRefs/ArticleAttachmenRefs'
 import Articles from '../../models/Articles/Articles'
-import { deleteRefs, file2json } from '../uploadController/modules/utils'
+import { file2json, safeDelete } from '../uploadController/modules/utils'
 import { deleteImage, insertImage } from './modules/imageUtils'
 
 const article2json = (article: any) => {
@@ -35,7 +34,7 @@ class ArticleController {
     const toPublish = req.body.publish === 'true'
     const publishAt = req.body.publishAt ? Number.parseInt(req.body.publishAt, 10) : null
 
-    const attachmentIds = req.body.attachments ? (JSON.parse(req.body.attachments) as string[]) : null
+    const attachmentIds = req.body.attachments ? (JSON.parse(req.body.attachments) as string[]) : undefined
 
     try {
       const imageId = await insertImage(req)
@@ -53,20 +52,13 @@ class ArticleController {
         newArticle.publishAt = publishAt
       }
 
+      newArticle.attachments = attachmentIds
+
       console.log('Saving...')
       await newArticle.save()
-
-      const articleId = newArticle._id as string
-      const refsToCreate = attachmentIds?.map((id) => ({
-        articleId: new ObjectId(articleId),
-        fileId: new ObjectId(id),
-      }))
-      if (refsToCreate) {
-        await ArticleAttachmenRefs.create(refsToCreate)
-      }
-
       console.log('Done')
-      return res.json({ id: articleId })
+
+      return res.json({ id: newArticle._id })
     } catch (error) {
       console.log('Failed')
       console.log((error as MongooseError).message)
@@ -124,6 +116,13 @@ class ArticleController {
         }
       }
 
+      set.attachments = attachmentIds
+
+      const newSet = new Set(attachmentIds.map((s) => s.toString()))
+
+      const filesToDelete = article.attachments?.filter((fileId) => !newSet.has(fileId.toString()))
+      console.log(`Id's to delete: ${JSON.stringify(filesToDelete)}`)
+
       const query = await Articles.updateOne(
         { _id: articleId },
         {
@@ -140,29 +139,8 @@ class ArticleController {
         await deleteImage(oldImageId)
       }
 
-      // deal with attachments
-      const currentRefs = await ArticleAttachmenRefs.find({ articleId }, { articleId: 1, fileId: 1 })
-
-      console.log(`>>> Current refs: ${JSON.stringify(currentRefs.map((r) => r.fileId))}`)
-      console.log(`>>> attachmentIds: ${JSON.stringify(attachmentIds)}`)
-
-      const toDelete = currentRefs?.filter((ref) => {
-        return attachmentIds.findIndex((aId) => aId.toString() === ref.fileId.toString()) === -1
-      })
-
-      console.log(`Refs to delete: ${JSON.stringify(toDelete)}`)
-
-      const toAppend = attachmentIds
-        .filter((aId) => {
-          return currentRefs.findIndex((ref) => ref.fileId.toString() === aId.toString()) === -1
-        })
-        .map((fileId) => ({ articleId: new ObjectId(articleId), fileId: new ObjectId(fileId) }))
-
-      console.log(`Refs to append: ${JSON.stringify(toAppend)}`)
-
-      await ArticleAttachmenRefs.create(toAppend)
-      if (toDelete.length > 0) {
-        await deleteRefs(toDelete)
+      if (filesToDelete) {
+        await safeDelete(filesToDelete)
       }
 
       res.json('OK')
@@ -195,38 +173,15 @@ class ArticleController {
       const joinAttachmentsPipeline = [
         {
           $lookup: {
-            from: 'articleattachmentrefs',
-            localField: '_id',
-            foreignField: 'articleId',
-            as: 'articleToRef',
-          },
-        },
-        {
-          $unwind: { path: '$articleToRef', preserveNullAndEmptyArrays: true },
-        },
-        {
-          $lookup: {
             from: 'uploadedfiles',
-            localField: 'articleToRef.fileId',
+            localField: 'attachments',
             foreignField: '_id',
-            as: 'attachment',
+            as: 'attachment_docs',
           },
         },
         {
-          $unwind: { path: '$attachment', preserveNullAndEmptyArrays: true },
-        },
-        {
-          $group: {
-            _id: '$_id',
-            attachments: { $push: '$attachment' },
-            authorId: { $first: '$authorId' },
-            title: { $first: '$title' },
-            body: { $first: '$body' },
-            isPublished: { $first: '$isPublished' },
-            publishAt: { $first: '$publishAt' },
-            createdAt: { $first: '$createdAt' },
-            updatedAt: { $first: '$updatedAt' },
-            imageId: { $first: '$imageId' },
+          $set: {
+            attachments: '$attachment_docs',
           },
         },
       ]
@@ -310,6 +265,8 @@ class ArticleController {
 
       const oldImageId = article.imageId
 
+      const filesToDelete = article.attachments
+
       const deleted = await Articles.deleteOne({ _id })
       if (deleted) {
         console.log(`Deleted ${_id}`)
@@ -317,10 +274,9 @@ class ArticleController {
           await deleteImage(oldImageId)
         }
 
-        const refsToDelete = await ArticleAttachmenRefs.find({ articleId: _id })
-        console.log(`Refs to delete: ${JSON.stringify(refsToDelete)}`)
-
-        await deleteRefs(refsToDelete)
+        if (filesToDelete) {
+          await safeDelete(filesToDelete)
+        }
 
         return res.json('OK')
       }

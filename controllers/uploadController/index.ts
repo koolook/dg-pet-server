@@ -3,7 +3,7 @@ import { Request, Response } from 'express'
 import UploadedFiles from '../../models/UploadedFiles/UploadedFiles'
 import { file2json, saveFile } from './modules/utils'
 
-class ArticleController {
+class UploadController {
   uploadFile = async (req: Request, res: Response) => {
     try {
       const newFile = await saveFile(req)
@@ -33,19 +33,6 @@ class ArticleController {
       return res.status(404).json('Not found')
     }
   }
-
-  /*   deleteFiles = async (req: Request, res: Response) => {
-    // const userId = req.user?.userid
-    const requestedIds = req.body.ids as string[]
-
-    try {
-      await deleteFiles(requestedIds)
-
-      res.json('OK')
-    } catch (error) {
-      res.status(500).json(error)
-    }
-  } */
 }
 
-export default new ArticleController()
+export default new UploadController()

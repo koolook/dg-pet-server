@@ -11,4 +11,6 @@ export interface ArticlesType {
   publishAt?: number
   createdAt: number
   updatedAt?: number
+
+  attachments?: string[]
 }
